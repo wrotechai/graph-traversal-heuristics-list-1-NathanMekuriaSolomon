@@ -20,6 +20,5 @@
 #   python3 main.py --start "$1" --end "$2" --criterion "$3" --time "$4"
 #   java -jar solution.jar "$1" "$2" "$3" "$4"
 # ============================================================================
-export PYTHONIOENCODING=utf-8
-export PYTHONUTF8=1
-python3 solution.py "$1" "$2" "$3" "$4"
+# Task 1 runner — finds shortest path from stop A to stop B.
+PYTHONIOENCODING=utf-8 PYTHONUTF8=1 python3 -X utf8 solution.py "$1" "$2" "$3" "$4"

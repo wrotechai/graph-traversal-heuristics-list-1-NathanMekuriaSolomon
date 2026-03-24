@@ -1,27 +1,43 @@
 #!/usr/bin/env python3
-# Entry point: Task 1 (Single) / Task 2 (TSP).
-# Output: Route segments to stdout; metrics to stderr.
+"""
+solution.py — entry point for both Task 1 and Task 2.
+
+Usage (Task 1 — single destination):
+    python solution.py "Wrocław Główny" "Jelenia Góra" t 06:00:00
+
+Usage (Task 2 — TSP, destinations separated by ';'):
+    python solution.py "Wrocław Główny" "Jelenia Góra;Legnica;Brzeg" t 06:00:00
+
+The date is read from the GTFS_DATE environment variable (default 2026-03-04).
+
+Output format
+-------------
+stdout  — one line per route segment:
+              <from_stop>  <to_stop>  <line>  <dep_HH:MM>  <arr_HH:MM>
+stderr  — criterion value (arrival time in seconds, or transfer count)
+          followed by computation time in seconds
+"""
 
 import sys
 import os
 import time as _time
 import io
 
-import sys
+# Force UTF-8 output so Polish characters survive subprocess capture on Windows.
+# On Linux (GitHub Actions) PYTHONUTF8=1 already handles this, but the
+# hasattr guard makes this safe on both platforms.
+if hasattr(sys.stdout, 'buffer'):
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
+if hasattr(sys.stderr, 'buffer'):
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-# Replace your io.TextIOWrapper lines with this at the top of main()
-if sys.stdout.encoding != 'utf-8':
-    sys.stdout.reconfigure(encoding='utf-8')
-if sys.stderr.encoding != 'utf-8':
-    sys.stderr.reconfigure(encoding='utf-8')
-    
 from build_graph import build_graph
 from astar       import astar, reconstruct_path
 from tabu_search import tabu_search
 from utils       import time_to_seconds, seconds_to_time
 
 
-# Helpers
+# Helper
 
 def resolve_stop_ids(stops, name: str) -> list:
     """Return all stop_ids whose stop_name matches `name` (exact)."""
@@ -78,17 +94,16 @@ def main():
     # Build graph
     graph, stops = build_graph(gtfs_path, date_str)
 
-    # Resolve start ID
+    # Resolve stops
     start_ids = resolve_stop_ids(stops, start_name)
     if not start_ids:
         print(f"ERROR: Start stop '{start_name}' not found.", file=sys.stderr)
         sys.exit(1)
 
-    
     is_tsp = ";" in dest_arg
 
     if not is_tsp:
-        # ── Task 1: single A* search 
+        # Task 1
         end_ids = resolve_stop_ids(stops, dest_arg)
         if not end_ids:
             print(f"ERROR: End stop '{dest_arg}' not found.", file=sys.stderr)
@@ -118,7 +133,7 @@ def main():
         print(f"criterion={crit_val}  time={elapsed:.2f}s", file=sys.stderr)
 
     else:
-        # ── Task 2: TSP via Tabu Search 
+        # Task 2
         visit_names = dest_arg.split(";")
         visit_ids   = []
         for name in visit_names:

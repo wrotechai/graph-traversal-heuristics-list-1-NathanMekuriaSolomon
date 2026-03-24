@@ -16,5 +16,6 @@
 #   python3 solution.py "$1" "$2" "$3" "$4"
 #   python3 solution.py --tsp "$1" "$2" "$3" "$4" "$GTFS_DATE"
 # ============================================================================
-
+export PYTHONIOENCODING=utf-8
+export PYTHONUTF8=1
 python3 solution.py "$1" "$2" "$3" "$4"
